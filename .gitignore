@@ -1,5 +1,12 @@
 node_modules/
-out/
+dist/
 build/
 .DS_Store
 .env
+
+# Rendered videos/stills from `npx remotion render` / `remotion still`.
+# Ignored on purpose; assets you import into the video belong in public/.
+out/
+
+# Claude Code: personal, machine-local settings (not shared with the repo)
+.claude/settings.local.json
