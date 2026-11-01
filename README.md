@@ -18,13 +18,18 @@ npm run dev
 
 `npm run dev` membuka Remotion Studio (preview video) di http://localhost:3000.
 
-Render ke MP4:
+Render ke MP4 (format: `npx remotion render <id> out/<nama>.mp4`):
 
 ```bash
-npx remotion render FirstVideo out/first-video.mp4
+npx remotion render LangitBiru out/langit-biru.mp4 --image-format=png
 ```
 
 Hasil render masuk ke folder `out/` dan tidak ikut di-commit.
+
+## Video yang sudah ada
+
+- `FirstVideo`: kartu judul 5 detik. Render: `npx remotion render FirstVideo out/first-video.mp4`.
+- `LangitBiru`: penjelasan "Kenapa langit berwarna biru?", 61 detik, landscape 1920x1080, delapan scene. Videonya tanpa suara; narasinya berupa caption di layar. Render sekitar 2 menit, dan `--image-format=png` membuat teks serta gambar vektornya lebih tajam. Mau menambah narasi atau musik? Taruh file audio di `public/` dan minta Claude memasangnya.
 
 ## Bikin video dengan Claude Code
 
@@ -47,7 +52,7 @@ Di Claude Code web, Studio tidak bisa dibuka dari browser kamu. Karena itu Claud
 src/
   index.ts           entry point (registerRoot)
   Root.tsx           daftar semua <Composition>
-  compositions/      satu file per video
+  compositions/      satu file per video (folder kalau banyak scene)
 public/              aset (gambar, audio, font), dipakai lewat staticFile()
 out/                 hasil render (di-gitignore)
 .agents/skills/      skill resmi Remotion (jangan diedit manual)
@@ -61,6 +66,7 @@ remotion.config.ts   konfigurasi Remotion
 
 - **Upgrade**: `npx remotion upgrade` meng-upgrade Remotion sekaligus skill-nya. Itu hanya bekerja kalau skill tetap berada di `.agents/skills`.
 - **Windows**: `.claude/skills` adalah symlink Git. Aktifkan Developer Mode dan `git config core.symlinks true` sebelum clone. Kalau tidak, symlink-nya berubah jadi file teks biasa dan skill tidak terbaca Claude Code.
-- **Jaringan di Claude Code web**: environment cloud secara default memblokir `remotion.media` dan `www.remotion.dev`. Render tetap jalan karena `remotion.config.ts` memakai browser bawaan sandbox, tetapi Claude tidak bisa membaca dokumentasi Remotion online. Untuk membukanya, tambahkan kedua host itu di pengaturan Network access pada environment cloud.
+- **Jaringan di Claude Code web**: environment cloud secara default memblokir `remotion.media` dan `www.remotion.dev`. Render tetap jalan karena `remotion.config.ts` memakai browser bawaan sandbox, tetapi Claude tidak bisa membaca dokumentasi Remotion online. Untuk membukanya, tambahkan kedua host itu di pengaturan Network access pada environment cloud. Di sandbox yang sama, browser untuk render juga tidak bisa memuat file dari internet (font Google gagal dengan error sertifikat). Karena itu fontnya disimpan lokal di `public/fonts/`, dan gambar atau audio sebaiknya juga ditaruh di `public/`.
+- **Font**: Nunito (lisensi SIL Open Font License, teks lisensinya ada di `public/fonts/Nunito-OFL.txt`).
 - **`npm audit`** melaporkan beberapa peringatan dari dependensi tooling Remotion. Jangan jalankan `npm audit fix --force`, karena itu akan men-downgrade Remotion.
 - **Lisensi**: Remotion gratis untuk tim sampai 3 orang. Untuk penggunaan di perusahaan, baca syaratnya di https://www.remotion.pro/license.
