@@ -10,3 +10,6 @@ out/
 
 # Claude Code: personal, machine-local settings (not shared with the repo)
 .claude/settings.local.json
+
+# Python bytecode from the helper scripts in scripts/
+__pycache__/
