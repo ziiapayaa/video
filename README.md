@@ -29,7 +29,7 @@ Hasil render masuk ke folder `out/` dan tidak ikut di-commit.
 ## Video yang sudah ada
 
 - `FirstVideo`: kartu judul 5 detik. Render: `npx remotion render FirstVideo out/first-video.mp4`.
-- `LangitBiru`: penjelasan "Kenapa langit berwarna biru?", 61 detik, landscape 1920x1080, delapan scene. Videonya tanpa suara; narasinya berupa caption di layar. Render sekitar 2 menit, dan `--image-format=png` membuat teks serta gambar vektornya lebih tajam. Mau menambah narasi atau musik? Taruh file audio di `public/` dan minta Claude memasangnya.
+- `LangitBiru`: penjelasan "Kenapa langit berwarna biru?", 61 detik, landscape 1920x1080, delapan scene. Ada musik latar orisinal (dibuat dengan `python3 -I scripts/music/make_music.py public/audio/langit-biru-music.mp3`, jadi bebas lisensi), sedangkan narasinya masih berupa caption di layar, belum ada suara pembicara. Render sekitar 2,5 menit, dan `--image-format=png` membuat teks serta gambar vektornya lebih tajam. Mau menambah suara narator? Rekam suara kamu, taruh file audionya di `public/`, dan minta Claude memasangnya.
 
 ## Bikin video dengan Claude Code
 
@@ -54,6 +54,7 @@ src/
   Root.tsx           daftar semua <Composition>
   compositions/      satu file per video (folder kalau banyak scene)
 public/              aset (gambar, audio, font), dipakai lewat staticFile()
+scripts/music/       pembuat musik latar (Python + numpy)
 out/                 hasil render (di-gitignore)
 .agents/skills/      skill resmi Remotion (jangan diedit manual)
 .claude/skills       symlink ke .agents/skills

@@ -1,4 +1,11 @@
-import { AbsoluteFill } from "remotion";
+import {
+  AbsoluteFill,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { Audio } from "@remotion/media";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { EyeScene } from "./scenes/EyeScene";
@@ -10,6 +17,29 @@ import { TitleScene } from "./scenes/TitleScene";
 import { VioletScene } from "./scenes/VioletScene";
 import { WavesScene } from "./scenes/WavesScene";
 
+// Peak volume of the background music, 0 to 1. Lower it (around 0.2) when a
+// narration track is added on top.
+const MUSIC_VOLUME = 1;
+
+// Original calm music from scripts/music/make_music.py, faded in and out.
+const BackgroundMusic: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  return (
+    <Audio
+      name="Background music"
+      src={staticFile("audio/langit-biru-music.mp3")}
+      volume={interpolate(
+        frame,
+        [0, 1.5 * fps, durationInFrames - 3 * fps, durationInFrames],
+        [0, MUSIC_VOLUME, MUSIC_VOLUME, 0],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+      )}
+    />
+  );
+};
+
 // "Kenapa langit berwarna biru?" - an explainer in eight scenes with a 15-frame
 // crossfade between them. Total length = sum of scenes - 7 crossfades:
 //   135 + 240 + 240 + 300 + 210 + 240 + 300 + 270 - 7 * 15 = 1830 frames (61 s).
@@ -17,6 +47,7 @@ import { WavesScene } from "./scenes/WavesScene";
 export const LangitBiru: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#0B1226" }}>
+      <BackgroundMusic />
       <TransitionSeries>
         <TransitionSeries.Sequence name="1 Judul" durationInFrames={135}>
           <TitleScene />
