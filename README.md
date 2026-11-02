@@ -29,7 +29,7 @@ Hasil render masuk ke folder `out/` dan tidak ikut di-commit.
 ## Video yang sudah ada
 
 - `FirstVideo`: kartu judul 5 detik. Render: `npx remotion render FirstVideo out/first-video.mp4`.
-- `LangitBiru`: penjelasan "Kenapa langit berwarna biru?", 61 detik, landscape 1920x1080, delapan scene. Ada musik latar orisinal (dibuat dengan `python3 -I scripts/music/make_music.py public/audio/langit-biru-music.mp3`, jadi bebas lisensi), sedangkan narasinya masih berupa caption di layar, belum ada suara pembicara. Render sekitar 2,5 menit, dan `--image-format=png` membuat teks serta gambar vektornya lebih tajam. Mau menambah suara narator? Rekam suara kamu, taruh file audionya di `public/`, dan minta Claude memasangnya.
+- `LangitBiru`: penjelasan "Kenapa langit berwarna biru?", sekitar 2 menit, landscape 1920x1080, delapan scene. Dijelaskan oleh suara narator (bahasa Indonesia), tanpa subtitle di layar, dengan musik latar orisinal di bawahnya. Render sekitar 5 menit, dan `--image-format=png` membuat gambar vektornya lebih tajam. Naskahnya ada di `scripts/narration/naskah.md`. Kalau naskah diubah, suara dan panjang video dibuat ulang oleh `scripts/narration/make_narration.py` (cara pakainya ada di bagian atas file itu), atau minta Claude yang menjalankannya.
 
 ## Bikin video dengan Claude Code
 
@@ -55,6 +55,7 @@ src/
   compositions/      satu file per video (folder kalau banyak scene)
 public/              aset (gambar, audio, font), dipakai lewat staticFile()
 scripts/music/       pembuat musik latar (Python + numpy)
+scripts/narration/   naskah narasi dan pembuat suaranya
 out/                 hasil render (di-gitignore)
 .agents/skills/      skill resmi Remotion (jangan diedit manual)
 .claude/skills       symlink ke .agents/skills
@@ -69,5 +70,6 @@ remotion.config.ts   konfigurasi Remotion
 - **Windows**: `.claude/skills` adalah symlink Git. Aktifkan Developer Mode dan `git config core.symlinks true` sebelum clone. Kalau tidak, symlink-nya berubah jadi file teks biasa dan skill tidak terbaca Claude Code.
 - **Jaringan di Claude Code web**: environment cloud secara default memblokir `remotion.media` dan `www.remotion.dev`. Render tetap jalan karena `remotion.config.ts` memakai browser bawaan sandbox, tetapi Claude tidak bisa membaca dokumentasi Remotion online. Untuk membukanya, tambahkan kedua host itu di pengaturan Network access pada environment cloud. Di sandbox yang sama, browser untuk render juga tidak bisa memuat file dari internet (font Google gagal dengan error sertifikat). Karena itu fontnya disimpan lokal di `public/fonts/`, dan gambar atau audio sebaiknya juga ditaruh di `public/`.
 - **Font**: Nunito (lisensi SIL Open Font License, teks lisensinya ada di `public/fonts/Nunito-OFL.txt`).
+- **Lisensi suara narator**: suaranya dibuat dengan model suara Piper `id_ID-news_tts-medium` yang jalan offline. Lisensi model itu **belum bisa diverifikasi** (model card di dalam paketnya tertukar dengan model bahasa lain). Cek dulu sebelum video diunggah ke publik, terutama kalau dimonetisasi. Alternatifnya, ganti dengan rekaman suara sendiri: simpan MP3 bernama sama dengan id kalimatnya di `public/audio/narration/`, lalu jalankan generator dengan `--from-audio`. Musik latarnya buatan sendiri dan bebas lisensi.
 - **`npm audit`** melaporkan beberapa peringatan dari dependensi tooling Remotion. Jangan jalankan `npm audit fix --force`, karena itu akan men-downgrade Remotion.
 - **Lisensi**: Remotion gratis untuk tim sampai 3 orang. Untuk penggunaan di perusahaan, baca syaratnya di https://www.remotion.pro/license.
