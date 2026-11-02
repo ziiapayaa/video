@@ -8,7 +8,8 @@ ffmpeg encodes the MP3 and measures its loudness.
     python3 scripts/music/make_music.py public/audio/langit-biru-music.mp3
 
 Change BPM, CHORDS or the arrangement below and run it again to get a different
-track. The output is deterministic (fixed random seeds).
+track. The output is deterministic (fixed random seeds). The default length (124 s)
+is for LangitBiru, which is 120.4 s long: pass --seconds when a video is longer.
 """
 import argparse
 import re
@@ -32,12 +33,26 @@ CHORDS = [
     (41, [52, 57, 60, 64], [65, 69, 72, 76]),  # Fmaj7: F2 | E3 A3 C4 E4 | F4 A4 C5 E5
     (43, [50, 55, 59, 64], [67, 71, 74, 76]),  # G6:    G2 | D3 G3 B3 E4 | G4 B4 D5 E5
 ]
-# Which chord tone each of the eight eighth-notes in a bar plays.
-ARPEGGIO_PATTERN = [0, 1, 2, 3, 2, 1, 0, 1]
+# Which chord tone each of the eight eighth-notes in a bar plays. Two patterns
+# alternate from one section to the next so a long track does not loop audibly.
+ARPEGGIO_PATTERNS = [
+    [0, 1, 2, 3, 2, 1, 0, 1],
+    [0, 2, 1, 3, 2, 1, 3, 2],
+]
 
 PAD_ENTRY_BAR = 0
 ARPEGGIO_ENTRY_BAR = 2
 BASS_ENTRY_BAR = 4
+SECTION_BARS = 8
+
+
+def arpeggio_pattern(bar: int):
+    """The arpeggio of a bar, or None: every fourth section is a breather with only
+    the pad and the bass."""
+    section = bar // SECTION_BARS
+    if bar < ARPEGGIO_ENTRY_BAR or section % 4 == 3:
+        return None
+    return ARPEGGIO_PATTERNS[section % len(ARPEGGIO_PATTERNS)]
 
 
 def midi_to_hz(note: int) -> float:
@@ -122,8 +137,9 @@ def build_track(seconds: float) -> np.ndarray:
             add(left, start, tone, 0.2)
             add(right, start, tone, 0.2)
 
-        if bar >= ARPEGGIO_ENTRY_BAR:
-            for step, index in enumerate(ARPEGGIO_PATTERN):
+        pattern = arpeggio_pattern(bar)
+        if pattern is not None:
+            for step, index in enumerate(pattern):
                 accent = 1.0 if step % 4 == 0 else 0.62 + 0.14 * (step % 2)
                 humanize = rng.uniform(-0.006, 0.006)
                 tone = pluck_note(midi_to_hz(arpeggio[index]))
@@ -176,7 +192,12 @@ def measure_lufs(path: Path) -> float:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("output", type=Path, help="MP3 file to write")
-    parser.add_argument("--seconds", type=float, default=64.0, help="track length")
+    parser.add_argument(
+        "--seconds",
+        type=float,
+        default=124.0,
+        help="track length. It must cover the whole video: <Audio> does not loop",
+    )
     parser.add_argument("--lufs", type=float, default=-18.0, help="target integrated loudness")
     args = parser.parse_args()
 
