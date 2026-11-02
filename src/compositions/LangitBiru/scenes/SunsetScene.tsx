@@ -5,28 +5,11 @@ import {
   interpolateColors,
   useCurrentFrame,
 } from "remotion";
-import { Captions, type CaptionChunk } from "../Caption";
 import { Glow } from "../Glow";
 import { toRadians } from "../geometry";
+import { Narration, cue } from "../Narration";
 import { COLORS, FONT_FAMILY } from "../theme";
-
-const CHUNKS: readonly CaptionChunk[] = [
-  {
-    text: "Saat senja, Matahari rendah di dekat cakrawala.",
-    from: 18,
-    to: 104,
-  },
-  {
-    text: "Cahayanya menempuh jalur yang lebih panjang di atmosfer.",
-    from: 110,
-    to: 194,
-  },
-  {
-    text: "Biru sudah tersebar habis, tersisa jingga dan merah.",
-    from: 200,
-    to: 284,
-  },
-];
+import { TIMELINE } from "../timeline.generated";
 
 // Side view of the Earth (a huge circle whose top edge is the ground) wrapped in
 // a thicker-than-real atmosphere so the light's path through it is easy to see.
@@ -65,14 +48,22 @@ const ArrowHead: React.FC<{
 
 export const SunsetScene: React.FC = () => {
   const frame = useCurrentFrame();
+  const { lines } = TIMELINE.sunset;
+  const [, lowSun, longPath, blueGone] = lines;
 
-  // The Sun sinks from high in the sky to the horizon.
-  const elevation = interpolate(frame, [20, 230], [62, 3], {
+  // The sky stays blue while the question is asked. The Sun then sinks while the
+  // voice describes it, and has reached the horizon as "jingga dan merah" is said.
+  const sinkFrom = cue(lowSun, 0.2);
+  const sinkTo = cue(blueGone, 0.45);
+  // "...jalur yang jauh lebih panjang": the long path is measured.
+  const noteAt = cue(longPath, 0.3);
+
+  const elevation = interpolate(frame, [sinkFrom, sinkTo], [62, 3], {
     easing: Easing.inOut(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const progress = (62 - elevation) / 59;
+  const sinking = (62 - elevation) / 59;
 
   const angle = toRadians(elevation);
   const dir = { x: -Math.cos(angle), y: -Math.sin(angle) };
@@ -92,17 +83,17 @@ export const SunsetScene: React.FC = () => {
     ["#FFF3C4", "#FFB347", "#FF5A36"],
   );
   const skyTop = interpolateColors(
-    progress,
+    sinking,
     [0, 0.55, 1],
     ["#3AA6FF", "#7A6FD0", "#2A2E75"],
   );
   const skyBottom = interpolateColors(
-    progress,
+    sinking,
     [0, 0.55, 1],
     ["#CDEAFF", "#FFB27A", "#FF7E5F"],
   );
 
-  const noteOpacity = interpolate(frame, [122, 138], [0, 1], {
+  const noteOpacity = interpolate(frame, [noteAt, noteAt + 16], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -123,6 +114,7 @@ export const SunsetScene: React.FC = () => {
         background: `linear-gradient(180deg, ${skyTop} 0%, ${skyBottom} 62%)`,
       }}
     >
+      <Narration lines={lines} />
       <svg
         width={1920}
         height={1080}
@@ -283,7 +275,6 @@ export const SunsetScene: React.FC = () => {
           </text>
         </g>
       </svg>
-      <Captions chunks={CHUNKS} />
     </AbsoluteFill>
   );
 };

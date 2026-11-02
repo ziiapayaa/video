@@ -5,24 +5,10 @@ import {
   random,
   useCurrentFrame,
 } from "remotion";
-import { Captions, type CaptionChunk } from "../Caption";
 import { Glow } from "../Glow";
+import { Narration, cue } from "../Narration";
 import { COLORS } from "../theme";
-
-const CHUNKS: readonly CaptionChunk[] = [
-  {
-    text: "Di Bulan tidak ada atmosfer, jadi tidak ada hamburan.",
-    from: 18,
-    to: 100,
-  },
-  { text: "Langitnya hitam, bahkan saat siang hari.", from: 106, to: 184 },
-  {
-    text: "Sekarang kamu tahu kenapa langit di Bumi biru!",
-    from: 190,
-    to: 270,
-    hold: true,
-  },
-];
+import { TIMELINE } from "../timeline.generated";
 
 const STARS = Array.from({ length: 110 }, (_, i) => ({
   x: random(`star-x-${i}`) * 1920,
@@ -41,12 +27,21 @@ const CRATERS = [
 
 export const MoonScene: React.FC = () => {
   const frame = useCurrentFrame();
+  const { lines } = TIMELINE.moon;
+  const [, , closing] = lines;
 
-  const earthPop = interpolate(frame, [186, 214], [0, 1], {
-    easing: Easing.spring({ damping: 200 }),
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  // The Earth appears as the voice says "di Bumi" in the last sentence.
+  const earthAppears = cue(closing, 0.5);
+  const earthPop = interpolate(
+    frame,
+    [earthAppears, earthAppears + 28],
+    [0, 1],
+    {
+      easing: Easing.spring({ damping: 200 }),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
 
   return (
     <AbsoluteFill
@@ -54,6 +49,7 @@ export const MoonScene: React.FC = () => {
         background: "linear-gradient(180deg, #02040A 0%, #0A1128 100%)",
       }}
     >
+      <Narration lines={lines} />
       <svg
         width={1920}
         height={1080}
@@ -147,7 +143,6 @@ export const MoonScene: React.FC = () => {
           />
         ))}
       </svg>
-      <Captions chunks={CHUNKS} />
     </AbsoluteFill>
   );
 };

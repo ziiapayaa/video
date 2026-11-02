@@ -5,16 +5,12 @@ import {
   random,
   useCurrentFrame,
 } from "remotion";
-import { Captions, type CaptionChunk } from "../Caption";
 import { Glow } from "../Glow";
 import { polar } from "../geometry";
+import { Narration, cue } from "../Narration";
+import { Photon } from "../Photon";
 import { COLORS, FONT_FAMILY } from "../theme";
-
-const CHUNKS: readonly CaptionChunk[] = [
-  { text: "Atmosfer penuh molekul gas yang sangat kecil.", from: 18, to: 94 },
-  { text: "Cahaya biru mudah dihamburkan ke segala arah,", from: 100, to: 184 },
-  { text: "sedangkan cahaya merah lewat hampir lurus.", from: 190, to: 284 },
-];
+import { TIMELINE } from "../timeline.generated";
 
 const LANE_BLUE_1 = 330;
 const LANE_BLUE_2 = 470;
@@ -22,6 +18,7 @@ const LANE_RED = 610;
 const START_X = 140;
 const HIT_1 = { x: 780, y: LANE_BLUE_1 };
 const HIT_2 = { x: 1180, y: LANE_BLUE_2 };
+const OFFSET_Y = 110;
 
 // Direction (degrees) and reach (px) of the blue light a molecule scatters.
 const BURST = [
@@ -64,26 +61,6 @@ const MOLECULES: readonly Molecule[] = (() => {
   }
   return result;
 })();
-
-const Photon: React.FC<{
-  readonly x: number;
-  readonly y: number;
-  readonly color: string;
-}> = ({ x, y, color }) => (
-  <g>
-    {[4, 3, 2, 1].map((k) => (
-      <circle
-        key={k}
-        cx={x - k * 16}
-        cy={y}
-        r={17 - k * 3}
-        fill={color}
-        opacity={0.5 - k * 0.1}
-      />
-    ))}
-    <circle cx={x} cy={y} r={17} fill={color} />
-  </g>
-);
 
 // A blue photon flies in, hits a molecule and is thrown out in every direction.
 const BlueLane: React.FC<{
@@ -169,6 +146,16 @@ const RedLane: React.FC<{
 
 export const ScatterScene: React.FC = () => {
   const frame = useCurrentFrame();
+  const { lines } = TIMELINE.scatter;
+  const [, blue, red] = lines;
+
+  // The blue photons are timed so they hit their molecules while "dihamburkan ...
+  // ke segala arah" is said; the red one crosses during the sentence about red.
+  const BLUE_1_SPEED = 16;
+  const BLUE_2_SPEED = 20;
+  const blue1Start = cue(blue, 0.3) - (HIT_1.x - START_X) / BLUE_1_SPEED;
+  const blue2Start = cue(blue, 0.75) - (HIT_2.x - START_X) / BLUE_2_SPEED;
+  const redStart = cue(red, 0) - 6;
 
   return (
     <AbsoluteFill
@@ -176,114 +163,126 @@ export const ScatterScene: React.FC = () => {
         background: "linear-gradient(180deg, #EAF6FF 0%, #CBE6FF 100%)",
       }}
     >
+      <Narration lines={lines} />
       <svg
         width={1920}
         height={1080}
         viewBox="0 0 1920 1080"
         style={{ position: "absolute", inset: 0 }}
       >
-        {/* Sun on the left */}
-        <Glow id="scatter-sun-glow" cx={70} cy={470} r={160} />
-        <circle cx={70} cy={470} r={46} fill={COLORS.sun} />
+        <g transform={`translate(0 ${OFFSET_Y})`}>
+          {/* Sun on the left */}
+          <Glow id="scatter-sun-glow" cx={70} cy={470} r={160} />
+          <circle cx={70} cy={470} r={46} fill={COLORS.sun} />
 
-        {/* The atmosphere */}
-        <rect
-          x={140}
-          y={130}
-          width={1640}
-          height={590}
-          rx={44}
-          fill="rgba(120, 190, 255, 0.28)"
-          stroke="#7CC4FF"
-          strokeWidth={5}
-          strokeDasharray="18 12"
-        />
-        <text
-          x={190}
-          y={206}
-          fontFamily={FONT_FAMILY}
-          fontSize={60}
-          fontWeight={900}
-          fill="#2F6EA8"
-        >
-          Atmosfer
-        </text>
-
-        {/* Legend */}
-        <circle cx={1340} cy={186} r={17} fill={COLORS.blue} />
-        <text
-          x={1370}
-          y={206}
-          fontFamily={FONT_FAMILY}
-          fontSize={54}
-          fontWeight={800}
-          fill={COLORS.ink}
-        >
-          Biru
-        </text>
-        <circle cx={1540} cy={186} r={17} fill={COLORS.red} />
-        <text
-          x={1570}
-          y={206}
-          fontFamily={FONT_FAMILY}
-          fontSize={54}
-          fontWeight={800}
-          fill={COLORS.ink}
-        >
-          Merah
-        </text>
-
-        {/* Faint guide for each light path */}
-        {[LANE_BLUE_1, LANE_BLUE_2, LANE_RED].map((y) => (
-          <line
-            key={y}
-            x1={START_X}
-            y1={y}
-            x2={1780}
-            y2={y}
-            stroke="rgba(22, 50, 79, 0.14)"
-            strokeWidth={4}
-            strokeDasharray="4 14"
-            strokeLinecap="round"
+          {/* The atmosphere */}
+          <rect
+            x={140}
+            y={130}
+            width={1640}
+            height={590}
+            rx={44}
+            fill="rgba(120, 190, 255, 0.28)"
+            stroke="#7CC4FF"
+            strokeWidth={5}
+            strokeDasharray="18 12"
           />
-        ))}
+          <text
+            x={190}
+            y={206}
+            fontFamily={FONT_FAMILY}
+            fontSize={60}
+            fontWeight={900}
+            fill="#2F6EA8"
+          >
+            Atmosfer
+          </text>
 
-        {/* Gas molecules */}
-        {MOLECULES.map((molecule) => {
-          const appear = 16 + (molecule.index % 10) * 3;
-          return (
+          {/* Legend */}
+          <circle cx={1340} cy={186} r={17} fill={COLORS.blue} />
+          <text
+            x={1370}
+            y={206}
+            fontFamily={FONT_FAMILY}
+            fontSize={54}
+            fontWeight={800}
+            fill={COLORS.ink}
+          >
+            Biru
+          </text>
+          <circle cx={1540} cy={186} r={17} fill={COLORS.red} />
+          <text
+            x={1570}
+            y={206}
+            fontFamily={FONT_FAMILY}
+            fontSize={54}
+            fontWeight={800}
+            fill={COLORS.ink}
+          >
+            Merah
+          </text>
+
+          {/* Faint guide for each light path */}
+          {[LANE_BLUE_1, LANE_BLUE_2, LANE_RED].map((y) => (
+            <line
+              key={y}
+              x1={START_X}
+              y1={y}
+              x2={1780}
+              y2={y}
+              stroke="rgba(22, 50, 79, 0.14)"
+              strokeWidth={4}
+              strokeDasharray="4 14"
+              strokeLinecap="round"
+            />
+          ))}
+
+          {/* Gas molecules appear one after another while they are described */}
+          {MOLECULES.map((molecule) => {
+            const appear = 20 + molecule.index * 3;
+            return (
+              <circle
+                key={molecule.index}
+                cx={molecule.x}
+                cy={molecule.y + Math.sin(frame / 20 + molecule.index) * 4}
+                r={molecule.r}
+                fill="#7F96B8"
+                opacity={interpolate(frame, [appear, appear + 14], [0, 0.9], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })}
+              />
+            );
+          })}
+          {[HIT_1, HIT_2].map((hit) => (
             <circle
-              key={molecule.index}
-              cx={molecule.x}
-              cy={molecule.y + Math.sin(frame / 20 + molecule.index) * 4}
-              r={molecule.r}
-              fill="#7F96B8"
-              opacity={interpolate(frame, [appear, appear + 14], [0, 0.9], {
+              key={hit.x}
+              cx={hit.x}
+              cy={hit.y}
+              r={21}
+              fill="#6C86AE"
+              opacity={interpolate(frame, [60, 74], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               })}
             />
-          );
-        })}
-        {[HIT_1, HIT_2].map((hit) => (
-          <circle
-            key={hit.x}
-            cx={hit.x}
-            cy={hit.y}
-            r={21}
-            fill="#6C86AE"
-            opacity={interpolate(frame, [30, 44], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            })}
-          />
-        ))}
+          ))}
 
-        <BlueLane hit={HIT_1} start={96} speed={11} period={120} />
-        <BlueLane hit={HIT_2} start={120} speed={14} period={130} />
-        <RedLane start={190} speed={22} period={110} />
+          <BlueLane
+            hit={HIT_1}
+            start={blue1Start}
+            speed={BLUE_1_SPEED}
+            period={100}
+          />
+          <BlueLane
+            hit={HIT_2}
+            start={blue2Start}
+            speed={BLUE_2_SPEED}
+            period={120}
+          />
+          <RedLane start={redStart} speed={24} period={130} />
+        </g>
       </svg>
-      <Captions chunks={CHUNKS} />
     </AbsoluteFill>
   );
 };

@@ -15,7 +15,7 @@ Gaya: santai seperti menjelaskan ke teman, kalimat pendek, tanpa angka dan simbo
 
 ## prism (prisma)
 
-- `prism-1`: Cahaya Matahari tampak berwarna putih.
+- `prism-1`: Cahaya Matahari terlihat berwarna putih.
 - `prism-2`: Tapi saat melewati prisma, cahaya itu terpecah menjadi banyak warna.
 - `prism-3`: Artinya, cahaya putih adalah campuran dari semua warna pelangi.
 
@@ -33,7 +33,7 @@ Gaya: santai seperti menjelaskan ke teman, kalimat pendek, tanpa angka dan simbo
 ## eye (sampai ke mata)
 
 - `eye-1`: Cahaya biru yang tersebar itu sampai ke mata kita dari segala arah.
-- `eye-2`: Itulah sebabnya seluruh langit tampak berwarna biru.
+- `eye-2`: Itulah sebabnya seluruh langit terlihat berwarna biru.
 
 ## violet (kenapa bukan ungu)
 
@@ -45,8 +45,8 @@ Gaya: santai seperti menjelaskan ke teman, kalimat pendek, tanpa angka dan simbo
 
 ## sunset (senja)
 
-- `sunset-1`: Lalu, kenapa saat senja langit berubah menjadi jingga?
-- `sunset-2`: Saat senja, Matahari berada rendah di dekat cakrawala.
+- `sunset-1`: Lalu, kenapa langit berubah menjadi jingga saat matahari terbenam?
+- `sunset-2`: Menjelang malam, Matahari berada rendah di dekat ufuk.
 - `sunset-3`: Cahayanya harus menempuh jalur yang jauh lebih panjang melewati atmosfer.
 - `sunset-4`: Sepanjang jalan itu, cahaya biru habis dihamburkan, dan yang tersisa hanya jingga dan merah.
 

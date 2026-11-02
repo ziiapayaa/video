@@ -6,7 +6,9 @@ import {
   useCurrentFrame,
 } from "remotion";
 import { Glow } from "../Glow";
+import { Narration, cue } from "../Narration";
 import { COLORS, FONT_FAMILY } from "../theme";
+import { TIMELINE } from "../timeline.generated";
 
 const Cloud: React.FC<{
   readonly x: number;
@@ -23,6 +25,21 @@ const Cloud: React.FC<{
 
 export const TitleScene: React.FC = () => {
   const frame = useCurrentFrame();
+  const { durationInFrames, lines } = TIMELINE.title;
+  const [, light] = lines;
+
+  // The sun swells for a moment as the voice says "cahaya" (light).
+  const sunPulse = cue(light, 0.55);
+  const sunScale = interpolate(
+    frame,
+    [sunPulse, sunPulse + 14, sunPulse + 34],
+    [1, 1.15, 1],
+    {
+      easing: Easing.inOut(Easing.quad),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
 
   return (
     <AbsoluteFill
@@ -31,6 +48,7 @@ export const TitleScene: React.FC = () => {
           "linear-gradient(180deg, #2E9BFF 0%, #7CC4FF 55%, #D6EEFF 100%)",
       }}
     >
+      <Narration lines={lines} />
       <svg
         width={1920}
         height={1080}
@@ -38,7 +56,7 @@ export const TitleScene: React.FC = () => {
         style={{ position: "absolute", inset: 0 }}
       >
         {/* Sun with slowly turning rays */}
-        <g transform="translate(1700 150)">
+        <g transform={`translate(1700 150) scale(${sunScale})`}>
           <Glow id="title-sun-glow" cx={0} cy={0} r={270} />
           <g transform={`rotate(${frame * 0.4})`}>
             {Array.from({ length: 12 }, (_, i) => (
@@ -59,15 +77,19 @@ export const TitleScene: React.FC = () => {
         </g>
 
         {/* Clouds drifting in opposite directions */}
-        <Cloud x={interpolate(frame, [0, 135], [90, 170])} y={190} size={0.9} />
         <Cloud
-          x={interpolate(frame, [0, 135], [1180, 1110])}
+          x={interpolate(frame, [0, durationInFrames], [90, 220])}
+          y={190}
+          size={0.9}
+        />
+        <Cloud
+          x={interpolate(frame, [0, durationInFrames], [1180, 1050])}
           y={96}
           size={0.7}
         />
         <Cloud
-          x={interpolate(frame, [0, 135], [1590, 1660])}
-          y={610}
+          x={interpolate(frame, [0, durationInFrames], [1590, 1720])}
+          y={745}
           size={0.7}
         />
 
@@ -87,14 +109,14 @@ export const TitleScene: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
-          paddingBottom: 80,
+          paddingBottom: 100,
         }}
       >
         <Interactive.Div
           name="Title line 1"
           style={{
             fontFamily: FONT_FAMILY,
-            fontSize: 160,
+            fontSize: 170,
             fontWeight: 900,
             lineHeight: 1.05,
             letterSpacing: -2,
@@ -118,7 +140,7 @@ export const TitleScene: React.FC = () => {
           name="Title line 2"
           style={{
             fontFamily: FONT_FAMILY,
-            fontSize: 160,
+            fontSize: 170,
             fontWeight: 900,
             lineHeight: 1.05,
             letterSpacing: -2,
@@ -137,32 +159,6 @@ export const TitleScene: React.FC = () => {
           }}
         >
           Berwarna Biru?
-        </Interactive.Div>
-        <Interactive.Div
-          name="Subtitle"
-          style={{
-            marginTop: 44,
-            padding: "14px 48px",
-            borderRadius: 60,
-            backgroundColor: "white",
-            fontFamily: FONT_FAMILY,
-            fontSize: 72,
-            fontWeight: 800,
-            color: "#16324F",
-            boxShadow: "0 10px 30px rgba(10, 60, 120, 0.25)",
-            opacity: interpolate(frame, [40, 56], [0, 1], {
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            }),
-            translate: interpolate(frame, [40, 64], ["0px 50px", "0px 0px"], {
-              easing: Easing.spring({ damping: 200 }),
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            }),
-          }}
-        >
-          Penjelasan singkat soal cahaya
         </Interactive.Div>
       </AbsoluteFill>
     </AbsoluteFill>
